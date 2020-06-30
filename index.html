@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body, html {
+            margin: 0%;
+            height: 100%;
+            width: auto;
+            
+            background-image: url(imgs/barquinhoBrabo.jpg);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            overflow: hidden;
+        }
+
+        img {
+            position: absolute;
+        }
+
+    </style>
+</head>
+<body>
+    <div id = morceguinhos>
+    </div>
+    <div id = explosions>
+    </div>    
+    <div id = explosionSound>
+    </div>
+
+    <button id="new"> Entra morcego </button>
+    <button id="remove"> Sai morcego </button>
+
+    <script>
+        /*Classe dos sons*/
+        class Sounds {
+            constructor() {
+                this.soundEl = document.createElement('audio');
+                this.soundEl.src = 'audio/explosions.wav';
+                this.soundEl.setAttribute("preload", "auto");
+                this.soundEl.setAttribute("controls", "none");
+                this.soundEl.style.display = "none";
+                document.querySelector('#explosionSound').appendChild(this.soundEl);
+                this.playSound();
+            }
+            playSound() {
+                this.soundEl.play();
+            }
+            pauseSound() {
+                this.soundEl.pause();
+            }
+        }
+
+        /*Classe das explosoes*/
+        class Explosion {
+            constructor(a,b) {
+                this.x = a;
+                this.y = b;
+
+                this.el = document.createElement('img');
+                this.el.src = 'imgs/explosions.gif';
+                this.el.width = 80;
+                this.el.height = 80;
+                this.el.alt = 'explosions';
+                document.querySelector('#explosions').appendChild(this.el);
+
+                this.el.style.transform = `translate(${this.x}px, ${this.y}px`;
+            }
+        }
+
+        /*Classe do morcego*/
+        class Morcego {
+            constructor() {
+                //Definindo movimentacao do morcego
+                this.x = 0;
+                this.y = 0
+                this.startY = 0;
+                this.speed = Math.random() * 3 + 2;
+                this.move = Math.random() * 3;
+                this.repeatTimes = 0;
+                //Caminho da imagem
+                this.el = document.createElement('img');
+                this.el.src = 'imgs/morceguinho.gif';
+                this.el.width = 80;
+                this.el.height = 80;
+                this.el.alt = 'morceguinho';
+                document.querySelector('#morceguinhos').appendChild(this.el);
+            }
+            //Movimentacao atualizada
+            movementSelector(){
+                //console.log(this.move);
+                switch(~~this.move){
+                    case 0:
+                        this.movement1();
+                        break;
+                    case 1:
+                        this.movement2();
+                        break;   
+                    case 2:
+                        this.movement3();
+                        break;
+                }
+            }
+            movement1() {
+                if(this.repeatTimes == 0){
+                    this.x = window.innerWidth;
+                    this.startY = Math.random() * (window.innerHeight-80);
+                    this.repeatTimes++;
+                }
+                this.x -= this.speed;
+                this.y = this.startY + Math.cos(this.x/30) * 15;
+                if(this.x < -75 ) {  
+                    this.x = window.innerWidth;                  
+                    this.startY = Math.random() * window.innerHeight;
+                    this.speed = Math.random() * 3 + 2;
+                    this.move = Math.random() * 3;
+                    this.repeatTimes = 0;
+                }
+                this.el.style.transform = `translate(${this.x}px, ${this.y}px`;
+            }
+            movement2() {
+                if(this.repeatTimes == 0){
+                    this.x = window.innerWidth;
+                    this.startY = 0
+                    this.repeatTimes++;
+                }
+                this.x -= this.speed;
+                this.y += 2 + Math.cos(this.x/30) * 3;
+                if(this.x < -75 || this.y >= window.innerHeight + 75) {  
+                    this.x = window.innerWidth;                  
+                    this.startY = 0;
+                    this.speed = Math.random() * 3 + 2;
+                    this.move = Math.random() * 3;
+                    this.repeatTimes = 0;
+                }
+                this.el.style.transform = `translate(${this.x}px, ${this.y}px`;
+            }
+            movement3() {
+                if(this.repeatTimes == 0){
+                    this.x = window.innerWidth;
+                    this.startY = window.innerHeight
+                    this.repeatTimes++;
+                }
+                this.x -= this.speed;
+                this.y -= 2 + Math.cos(this.x/30) * 3;
+                if(this.x < -75 || this.y < -75) {  
+                    this.x = window.innerWidth;                  
+                    this.startY = window.innerHeight;
+                    this.speed = Math.random() * 3 + 2;
+                    this.move = Math.random() * 3;
+                    this.repeatTimes = 0;
+                }
+                this.el.style.transform = `translate(${this.x}px, ${this.y}px`;
+            }
+            //Funcao gets
+            getx() {
+                return this.x;
+            }
+            gety() {
+                return this.y;
+            }            
+            //Funcao ao der resize na tela
+            reziseFunction() {
+                this.y = this.y - window.innerHeight;            
+            }
+        }
+
+        /*Criar morcego a partir de cliques e o intervalo de atualizacao*/
+        let morceguinhos = [new Morcego()];
+        setInterval(() => {
+            for (let i = 0; i < morceguinhos.length; i++) {
+                
+                morceguinhos[i].movementSelector();
+            }
+        }, 15);
+        let newEl = document.querySelector('#new');
+        newEl.addEventListener('click', () => {
+            morceguinhos.push(new Morcego());
+        })
+
+        /*Remove morcego ao clicar no botao*/
+        let removeEl = document.querySelector('#remove');
+        let explosion = [];   
+        let sound = []
+        removeEl.addEventListener('click', () => {
+            if(morceguinhos[0]!=null) {
+                explosion.push(new Explosion(morceguinhos[morceguinhos.length-1].getx(), morceguinhos[morceguinhos.length-1].gety()));
+                morceguinhos[morceguinhos.length-1].el.remove();
+                morceguinhos.pop();
+                sound.push(new Sounds());
+                window.setTimeout(deleteExplosion,200);               
+                
+            }
+        })
+        function deleteExplosion() {
+            explosion[explosion.length-1].el.remove();
+            explosion.pop();
+            sound.pop();
+        }
+
+        /*Atualizar a tela dependendo do tamanho dela*/
+        window.onresize = function(){resize};
+        function resize() {
+            for(i=0; i<morceguinhos.length; i++) {
+                morceguinhos[i].reziseFunction;
+            }
+        }
+    </script>
+
+    
+</body>
+</html>
